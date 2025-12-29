@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Click and Reveal: Developing a Scenario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* Brand Colors: 
+           #1f2a52 (Midnight Blue)
+           #00bec7 (Teal)
+           #d2f0f0 (Light Aqua)
+           #abb5bf (Slate Grey)
+        */
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1f2a52;
+            padding: 0;
+            margin: 0;
+        }
+
+        .activity-card {
+            max-width: 1000px;
+            margin: 2rem auto;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(31, 42, 82, 0.1);
+            overflow: hidden;
+            border: 1px solid #d2f0f0;
+        }
+
+        .header-bar {
+            background-color: #1f2a52;
+            padding: 1.5rem 2.5rem;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .main-content-area {
+            display: flex;
+            gap: 2rem;
+            padding: 2.5rem;
+            min-height: 500px;
+        }
+
+        /* Sidebar Column */
+        .sidebar-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            flex-shrink: 0;
+            width: 200px;
+        }
+
+        .stage-card {
+            background-color: #d2f0f0;
+            border-radius: 0.75rem;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+
+        .stage-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(31, 42, 82, 0.1);
+            border-color: #00bec7;
+        }
+
+        .stage-card.active {
+            border-color: #00bec7;
+            background-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 190, 199, 0.15);
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #00bec7;
+            border: 3px solid #1f2a52;
+        }
+
+        .stage-card.active .icon-box {
+            background-color: #00bec7;
+            color: #ffffff;
+        }
+
+        .stage-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1f2a52;
+            margin: 0;
+        }
+
+        /* Details Reveal Area */
+        .details-container {
+            flex-grow: 1;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid #abb5bf;
+            display: none; /* Hidden until card clicked */
+            flex-direction: column;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .details-container.open {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #d2f0f0;
+        }
+
+        .details-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2a52;
+            margin: 0;
+        }
+
+        .close-btn {
+            color: #abb5bf;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #1f2a52;
+        }
+
+        .content-sections {
+            display: flex;
+            gap: 1rem;
+            flex-direction: column;
+        }
+
+        @media (min-width: 900px) {
+            .content-sections {
+                flex-direction: row;
+            }
+        }
+
+        .content-box {
+            flex: 1;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid transparent;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease;
+            display: none;
+        }
+
+        .content-box.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .box-initial { background-color: #d2f0f0; border-color: #00bec7; }
+        .box-challenge { background-color: #f8fafc; border-color: #abb5bf; }
+        .box-response { background-color: #00bec7; color: #ffffff; }
+
+        .box-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .box-response .box-title { color: #ffffff; }
+        .box-initial .box-title { color: #1f2a52; }
+        .box-challenge .box-title { color: #1f2a52; }
+
+        .action-area {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .primary-btn {
+            background-color: #00bec7;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .primary-btn:hover {
+            background-color: #1f2a52;
+            box-shadow: 0 4px 12px rgba(31, 42, 82, 0.2);
+        }
+
+        .consultant-trigger {
+            width: 56px;
+            height: 56px;
+            background-color: #1f2a52;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 3px solid #00bec7;
+            transition: transform 0.2s;
+            color: #ffffff;
+        }
+
+        .consultant-trigger:hover {
+            transform: scale(1.1);
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="activity-card">
+        <div class="header-bar">
+            <h1 class="text-2xl font-bold uppercase tracking-wide">Click and reveal: Developing a Scenario</h1>
+        </div>
+
+        <div class="main-content-area">
+            <!-- Sidebar with Stage Cards -->
+            <div class="sidebar-column">
+                <div class="stage-card" onclick="openStage('stage1', this)">
+                    <div class="icon-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="stage-title">Stage One</span>
+                </div>
+
+                <div class="stage-card" onclick="openStage('stage2', this)">
+                    <div class="icon-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <span class="stage-title">Stage Two</span>
+                </div>
+
+                <div class="stage-card" onclick="openStage('stage3', this)">
+                    <div class="icon-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <span class="stage-title">Stage Three</span>
+                </div>
+            </div>
+
+            <!-- Details Container -->
+            <div id="details-view" class="details-container">
+                <div class="details-header">
+                    <h3 id="current-title">Lorem Ipsum Stage</h3>
+                    <span class="close-btn" onclick="closeDetails()">&times;</span>
+                </div>
+
+                <div class="content-sections">
+                    <div id="box-init" class="content-box box-initial">
+                        <h4 class="box-title">Initial Setup</h4>
+                        <p id="text-init">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+
+                    <div id="box-chall" class="content-box box-challenge">
+                        <h4 class="box-title">The Challenge</h4>
+                        <p id="text-chall">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                    </div>
+
+                    <div id="box-resp" class="content-box box-response">
+                        <h4 class="box-title">Proposed Outcome</h4>
+                        <p id="text-resp">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                    </div>
+                </div>
+
+                <div class="action-area">
+                    <button id="btn-challenge" class="primary-btn" onclick="revealChallenge()">Reveal Challenge</button>
+                    <div id="btn-consultant" class="consultant-trigger hidden" onclick="revealResponse()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scenarioData = {
+            'stage1': {
+                title: 'Scenario Stage One',
+                initial: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation.',
+                challenge: 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit.',
+                response: 'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+            },
+            'stage2': {
+                title: 'Scenario Stage Two',
+                initial: 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti.',
+                challenge: 'Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.',
+                response: 'Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime.'
+            },
+            'stage3': {
+                title: 'Scenario Stage Three',
+                initial: 'Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates.',
+                challenge: 'Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias.',
+                response: 'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni.'
+            }
+        };
+
+        let currentStage = '';
+
+        function openStage(id, element) {
+            currentStage = id;
+            const data = scenarioData[id];
+
+            // Reset UI
+            document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+
+            document.getElementById('current-title').innerText = data.title;
+            document.getElementById('text-init').innerText = data.initial;
+            document.getElementById('text-chall').innerText = data.challenge;
+            document.getElementById('text-resp').innerText = data.response;
+
+            // Show initial box only
+            document.getElementById('details-view').classList.add('open');
+            document.getElementById('box-init').classList.add('visible');
+            document.getElementById('box-chall').classList.remove('visible');
+            document.getElementById('box-resp').classList.remove('visible');
+            
+            // Reset buttons
+            document.getElementById('btn-challenge').classList.remove('hidden');
+            document.getElementById('btn-consultant').classList.add('hidden');
+        }
+
+        function revealChallenge() {
+            document.getElementById('box-chall').classList.add('visible');
+            document.getElementById('btn-challenge').classList.add('hidden');
+            document.getElementById('btn-consultant').classList.remove('hidden');
+        }
+
+        function revealResponse() {
+            document.getElementById('box-resp').classList.add('visible');
+            document.getElementById('btn-consultant').classList.add('hidden');
+        }
+
+        function closeDetails() {
+            document.getElementById('details-view').classList.remove('open');
+            document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('active'));
+        }
+    </script>
+</body>
+</html>
